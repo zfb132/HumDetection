@@ -160,7 +160,9 @@ if(isempty(singley))
 end
 soundsc(singley);
 
+
 %% 自定义函数部分
+% 在指定坐标axes上显示时域波形
 function timeplot(x,T,hObject)
     axes(hObject);
     plot(linspace(0,T,length(x)),x);
@@ -168,3 +170,17 @@ function timeplot(x,T,hObject)
     title('语音信号时域波形');
     xlabel('时间/S');
     ylabel('信号幅度'); 
+    
+% 自定义分帧函数
+function [segnum,segment]=frame(x,seglen,noverlap)
+    % 向上取整
+    segnum=ceil(length(x)/noverlap);
+    % 不足一帧的补零
+    x=[x',zeros(1,segnum*noverlap-length(x))]';
+    % 因为seglen>noverlap，故i*noverlap+seglen要用segnum-1个段，否则超出索引
+    segnum=segnum-1;
+    % 输入x分段后用数组来保存，一列seglen个数据对应一个段，共segnum列
+    segment=zeros([seglen,segnum]);
+    for i=0:segnum-1
+        segment(:,i+1)=x(i*noverlap+1:i*noverlap+seglen);
+    end
