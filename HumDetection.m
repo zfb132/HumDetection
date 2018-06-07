@@ -106,6 +106,8 @@ try
     singley=resample(singley,fs,Fs);
     info = audioinfo(strcat(path,filename));
     T = info.Duration;
+    % 显示时域波形
+    timeplot(singley,T,handles.axes1);
 catch ErrorInfo
     disp(ErrorInfo)
 end
@@ -157,3 +159,12 @@ if(isempty(singley))
     return;
 end
 soundsc(singley);
+
+%% 自定义函数部分
+function timeplot(x,T,hObject)
+    axes(hObject);
+    plot(linspace(0,T,length(x)),x);
+    xlim([0 T]);
+    title('语音信号时域波形');
+    xlabel('时间/S');
+    ylabel('信号幅度'); 
