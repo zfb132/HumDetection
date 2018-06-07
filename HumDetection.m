@@ -22,7 +22,7 @@ function varargout = HumDetection(varargin)
 
 % Edit the above text to modify the response to help HumDetection
 
-% Last Modified by GUIDE v2.5 07-Jun-2018 16:56:43
+% Last Modified by GUIDE v2.5 07-Jun-2018 19:06:07
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -58,6 +58,14 @@ handles.output = hObject;
 % Update handles structure
 guidata(hObject, handles);
 
+% GUI界面居中
+movegui( gcf, 'center' );
+
+% 为button添加背景图片
+im=imread('sound.png');
+set(handles.pushbutton_play1,'CData',im);
+set(handles.pushbutton_play2,'CData',im);
+
 % UIWAIT makes HumDetection wait for user response (see UIRESUME)
 % uiwait(handles.figure1);
 
@@ -78,7 +86,29 @@ function pushbutton_file_Callback(hObject, eventdata, handles)
 % hObject    handle to pushbutton_file (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-
+global singley;global T;
+try
+    %清空上次残留图像
+    cla(handles.axes1,'reset'); 
+    cla(handles.axes2,'reset');
+    cla(handles.axes3,'reset'); 
+    cla(handles.axes4,'reset');
+    %读取文件
+    [filename,path]=uigetfile({'*.wav;*.mp3;*.ogg;*.flac;*.au;',  ...
+        '音频文件(*.wav,*.mp3,*.ogg,*.flac,*.au)';},'打开文件') ;
+    set(handles.edit_filename,'String',filename);
+    [y,Fs] = audioread(strcat(path,filename));
+    singley = y(:,1);
+    % 重采样至8KHz
+    fs=8000;
+    % 预加重滤波
+    singley=filter([1 -0.68],1,singley);
+    singley=resample(singley,fs,Fs);
+    info = audioinfo(strcat(path,filename));
+    T = info.Duration;
+catch ErrorInfo
+    disp(ErrorInfo)
+end
 
 
 function edit_filename_Callback(hObject, eventdata, handles)
@@ -101,3 +131,29 @@ function edit_filename_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
+
+
+% --- Executes on button press in pushbutton_play1.
+function pushbutton_play1_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton_play1 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+global singley;
+if(isempty(singley))
+    msgbox('请先选择文件！','警告','warn');
+    return;
+end
+soundsc(singley);
+
+
+% --- Executes on button press in pushbutton_play2.
+function pushbutton_play2_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton_play2 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+global singley;
+if(isempty(singley))
+    msgbox('请先选择文件！','警告','warn');
+    return;
+end
+soundsc(singley);
