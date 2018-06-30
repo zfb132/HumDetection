@@ -57,7 +57,8 @@ handles.output = hObject;
 
 % Update handles structure
 guidata(hObject, handles);
-
+% 清除可能其他项目的全局变量
+clear global;
 % GUI界面居中
 movegui( gcf, 'center' );
 
@@ -66,15 +67,17 @@ im=imread('sound.png');
 set(handles.pushbutton_play1,'CData',im);
 set(handles.pushbutton_play2,'CData',im);
 
-% 全局变量buffer存储10列实时语音
-global buffer;
-buffer = zeros(2400,10);
+
 % 0表示哼唱系统；1表示评分系统
 global flag;
 flag=0;
 % 默认不显示这两个
 set(handles.text_4score,'Visible','off');
 set(handles.edit_4score,'Visible','off');
+% 默认禁用edit_result，只作为输出
+set(handles.edit_result,'Enable','inactive');
+% 禁止显示警告，展示时用
+warning off;
 
 % UIWAIT makes HumDetection wait for user response (see UIRESUME)
 % uiwait(handles.figure1);
@@ -200,8 +203,8 @@ function pushbutton_play2_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 global Y;global T2;
-if(isempty(Y))
-    msgbox('请先选择文件！','警告','warn');
+if(isempty(T2))
+    msgbox('请先点击钢琴演奏按钮！','警告','warn');
     return;
 end
 ts=timerfind;
@@ -272,12 +275,18 @@ function pushbutton_piano_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 global order;global speed;global Y;global T2;global flag;global singleyr;
+% if(isempty(Y))
+%     msgbox('请先选择文件！','警告','warn');
+%     return;
+% end
 if flag
     % 默认节拍为1
     ratio=get(handles.edit_4score,'String');
     ratio=str2num(ratio);
     str=get(handles.edit_result,'String');
-    str=regexp(str, ' ', 'split');
+    % 字符串预处理
+    str=strtrim(str);
+    str=regexp(str, '\s+', 'split');
     % 标准音的个数
     len=length(str);
     num=zeros(1,len);
@@ -352,6 +361,7 @@ function togglebutton1_Callback(hObject, eventdata, handles)
 
 % Hint: get(hObject,'Value') returns toggle state of togglebutton1
 global flag;
+set(handles.edit_result,'Enable','on');
 set(handles.text7,'String','输入旋律');
 set(handles.text_title,'String','哼唱评分系统');
 set(handles.edit_result,'String','');
